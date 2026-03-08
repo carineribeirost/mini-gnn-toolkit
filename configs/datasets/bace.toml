@@ -1,0 +1,9 @@
+[dataset]
+name        = "bace"
+path        = "data/cache/bace.npz"
+target_col  = "pIC50"
+max_nodes   = 98
+max_edges   = 202
+task        = "regression"
+n_targets   = 1
+split       = "scaffold"

@@ -1,0 +1,11 @@
+[dataset]
+name        = "tox21"
+path        = "data/cache/tox21.npz"
+# 12 binary classification tasks (NR-AR, NR-AR-LBD, NR-AhR, NR-Aromatase,
+# NR-ER, NR-ER-LBD, NR-PPAR-gamma, SR-ARE, SR-ATAD5, SR-HSE, SR-MMP, SR-p53)
+target_col  = "all"
+max_nodes   = 132
+max_edges   = 290
+task        = "multilabel_classification"
+n_targets   = 12
+split       = "scaffold"

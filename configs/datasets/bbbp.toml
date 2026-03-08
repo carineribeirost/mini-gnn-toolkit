@@ -1,0 +1,9 @@
+[dataset]
+name        = "bbbp"
+path        = "data/cache/bbbp.npz"
+target_col  = "p_np"
+max_nodes   = 132
+max_edges   = 290
+task        = "classification"
+n_targets   = 1
+split       = "scaffold"

@@ -12,6 +12,7 @@ class ModelConfig:
     readout:    str   = "mean"    # "sum" | "mean" | "max" | "attention"
     num_heads:  int   = 4         # GAT only
     epsilon:    float = 0.0       # GIN only (initial value; learnable)
+    delta:      float = 5.0       # PNA only — average training-set node degree
 
 
 @dataclass(frozen=True)
@@ -28,15 +29,15 @@ class TrainConfig:
 
 @dataclass(frozen=True)
 class DatasetConfig:
-    name:       str   = "custom"
-    path:       str   = ""        # path to preprocessed .npz cache
-    target_col: str   = "target"
-    max_nodes:  int   = 64        # padding size per batch
-    max_edges:  int   = 256
-    max_atoms:  int   = 64        # for Coulomb matrix baseline
-    task:       str   = "regression"   # "regression" | "classification"
-    n_targets:  int   = 1
-    # normalisation stats (filled by preprocess.py)
+    name:        str   = "custom"
+    path:        str   = ""
+    target_col:  str   = "target"
+    max_nodes:   int   = 64
+    max_edges:   int   = 256
+    task:        str   = "regression"   # "regression" | "classification" | "multilabel_classification"
+    n_targets:   int   = 1
+    split:       str   = "scaffold"     # "scaffold" | "random"
+    # normalisation stats (filled by preprocess.py, regression only)
     target_mean: float = 0.0
     target_std:  float = 1.0
 

@@ -64,12 +64,15 @@ def get_model_class(name: str) -> type:
 
 def build_model(arch: str, hidden_dim: int, num_layers: int,
                 dropout: float, readout: str, **kwargs):
-    """Instantiate a model by arch name with common hyperparameters."""
+    """Instantiate a model by arch name, filtering kwargs to accepted fields."""
+    import dataclasses
     cls = get_model_class(arch)
+    accepted = {f.name for f in dataclasses.fields(cls)}
+    filtered = {k: v for k, v in kwargs.items() if k in accepted}
     return cls(
         hidden_dim=hidden_dim,
         num_layers=num_layers,
         dropout=dropout,
         readout=readout,
-        **kwargs,
+        **filtered,
     )

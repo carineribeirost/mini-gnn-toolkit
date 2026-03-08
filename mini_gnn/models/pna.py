@@ -37,6 +37,10 @@ def _pna_aggregate(
     agg_mean = jraph.segment_mean(h[senders], receivers, num_segments=N)
     agg_max  = jax.ops.segment_max(h[senders], receivers, num_segments=N)
 
+    # segment_max returns -inf for isolated nodes — replace with 0
+    has_nbrs = (degrees > 0)[:, None]
+    agg_max  = jnp.where(has_nbrs, agg_max, 0.0)
+
     # std: sqrt(E[x^2] - E[x]^2), clamped to avoid sqrt of negatives
     agg_sq   = jraph.segment_mean(h[senders] ** 2, receivers, num_segments=N)
     agg_std  = jnp.sqrt(jnp.maximum(agg_sq - agg_mean ** 2, 1e-8))
@@ -48,9 +52,10 @@ def _pna_aggregate(
     log_d  = jnp.log(d + 1.0)
     log_delta = jnp.log(jnp.array(delta + 1.0))
 
-    scale_identity = jnp.ones_like(d)
-    scale_amplify  = log_d / jnp.maximum(log_delta, 1e-8)
-    scale_attenuate = log_delta / jnp.maximum(log_d, 1e-8)
+    scale_identity  = jnp.ones_like(d)
+    # for degree-0 nodes: no neighbours → amplify/attenuate both collapse to 0
+    scale_amplify   = jnp.where(has_nbrs, log_d / jnp.maximum(log_delta, 1e-8), 0.0)
+    scale_attenuate = jnp.where(has_nbrs, log_delta / jnp.maximum(log_d, 1e-8), 0.0)
 
     # apply each scaler to the full aggregator vector
     scaled = jnp.concatenate([

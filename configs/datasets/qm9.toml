@@ -1,0 +1,9 @@
+[dataset]
+name        = "qm9"
+path        = "data/cache/qm9.npz"
+target_col  = "homo"    # change to any QM9 property
+max_nodes   = 29        # QM9 max heavy atoms + H = 29
+max_edges   = 116       # max directed edges
+max_atoms   = 29
+task        = "regression"
+n_targets   = 1

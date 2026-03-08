@@ -1,0 +1,32 @@
+seed = 42
+arch = "gcn"
+
+[model]
+hidden_dim = 128
+num_layers = 4
+dropout    = 0.0
+readout    = "mean"
+num_heads  = 4
+epsilon    = 0.0
+
+[train]
+lr           = 1e-3
+weight_decay = 0.0
+epochs       = 200
+batch_size   = 32
+patience     = 30
+grad_clip    = 1.0
+scheduler    = "cosine"
+warmup_steps = 0
+
+[dataset]
+name        = "custom"
+path        = ""
+target_col  = "target"
+max_nodes   = 64
+max_edges   = 256
+max_atoms   = 64
+task        = "regression"
+n_targets   = 1
+target_mean = 0.0
+target_std  = 1.0

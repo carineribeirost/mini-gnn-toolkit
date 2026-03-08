@@ -1,0 +1,8 @@
+arch = "gin"
+
+[model]
+hidden_dim = 128
+num_layers = 4
+dropout    = 0.5
+readout    = "sum"
+epsilon    = 0.0

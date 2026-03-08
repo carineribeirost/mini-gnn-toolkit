@@ -1,0 +1,9 @@
+[dataset]
+name        = "esol"
+path        = "data/cache/esol.npz"
+target_col  = "measured log solubility in mols per litre"
+max_nodes   = 55
+max_edges   = 120
+max_atoms   = 55
+task        = "regression"
+n_targets   = 1

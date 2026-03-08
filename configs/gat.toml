@@ -1,0 +1,8 @@
+arch = "gat"
+
+[model]
+hidden_dim = 128
+num_layers = 4
+dropout    = 0.6
+readout    = "mean"
+num_heads  = 4

@@ -1,0 +1,6 @@
+[model]
+n_estimators    = 500
+max_depth       = 0      # 0 = unlimited (sklearn convention)
+n_bits          = 2048   # Morgan fingerprint radius-2 bit vector size
+radius          = 2
+n_jobs          = -1

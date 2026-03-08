@@ -1,0 +1,7 @@
+arch = "gcn"
+
+[model]
+hidden_dim = 128
+num_layers = 4
+dropout    = 0.0
+readout    = "mean"

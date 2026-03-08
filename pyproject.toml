@@ -1,0 +1,51 @@
+[project]
+name = "mini-gnn-toolkit"
+version = "0.1.0"
+description = "Lightweight GNN toolkit for training and comparing graph neural network architectures"
+requires-python = ">=3.11"
+dependencies = [
+    "jax[cuda12]",
+    "jraph",
+    "flax",
+    "optax",
+    "orbax-checkpoint",
+    "rdkit",
+    "ase",
+    "pymatgen",
+    "numpy",
+    "matplotlib",
+    "pandas",
+    "rich",
+    "scipy",
+    "scikit-learn",
+]
+
+[project.optional-dependencies]
+rapids = [
+    "cudf-cu12",
+    "cuml-cu12",
+]
+dev = [
+    "pytest",
+    "pytest-xdist",
+]
+
+[project.scripts]
+gnn-train      = "scripts.train:main"
+gnn-compare    = "scripts.compare:main"
+gnn-preprocess = "scripts.preprocess:main"
+gnn-inspect    = "scripts.inspect_dataset:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+# RAPIDS must be pulled from NVIDIA's index when the rapids extra is used
+cudf-cu12 = { index = "nvidia" }
+cuml-cu12 = { index = "nvidia" }
+
+[[tool.uv.index]]
+name = "nvidia"
+url  = "https://pypi.nvidia.com"
+explicit = true

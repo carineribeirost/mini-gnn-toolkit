@@ -1,0 +1,4 @@
+[model]
+alpha  = 1e-6    # regularisation strength
+gamma  = 1e-3    # RBF kernel bandwidth (None = 1/n_features)
+kernel = "rbf"

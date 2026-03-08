@@ -1,0 +1,7 @@
+arch = "pna"
+
+[model]
+hidden_dim = 64   # PNA is wide due to multiple aggregators; reduce to fit 4 GB
+num_layers = 4
+dropout    = 0.0
+readout    = "mean"

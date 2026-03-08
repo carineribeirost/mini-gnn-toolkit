@@ -64,10 +64,9 @@ def _cmd_evaluate(args):
 
     archs = args.archs or ["gcn", "gin", "mpnn", "gat", "pna"]
 
-    # load optional toml overrides
     model_cfg   = ModelConfig()
     train_cfg   = TrainConfig()
-    dataset_cfg = DatasetConfig()
+    dataset_cfg = None   # None → run_experiment reads max_nodes/max_edges from .npz
 
     if args.config:
         from mini_gnn.training.config import load_config

@@ -32,12 +32,16 @@ def _test_metrics(
     from mini_gnn.data.datasets import split_dataset
     from mini_gnn.training.metrics import compute_metrics
 
+    bs = cfg.train.batch_size
+    batch_max_nodes = cfg.dataset.max_nodes * bs + 1
+    batch_max_edges = cfg.dataset.max_edges * bs + 2
+
     test_data    = split_dataset(dataset, "test")
     test_batches = make_batches(
         test_data["graphs"],
-        batch_size=cfg.train.batch_size,
-        max_nodes=cfg.dataset.max_nodes,
-        max_edges=cfg.dataset.max_edges,
+        batch_size=bs,
+        max_nodes=batch_max_nodes,
+        max_edges=batch_max_edges,
         shuffle=False,
     )
     model = build_model(
@@ -125,7 +129,8 @@ def run_experiment(
                     epsilon=model_cfg.epsilon, delta=model_cfg.delta)
         tr_data     = split_dataset(dataset, "train")
         tr_batches  = make_batches(tr_data["graphs"], batch_size=train_cfg.batch_size,
-                                   max_nodes=dataset_cfg.max_nodes, max_edges=dataset_cfg.max_edges,
+                                   max_nodes=dataset_cfg.max_nodes * train_cfg.batch_size + 1,
+                                   max_edges=dataset_cfg.max_edges * train_cfg.batch_size + 2,
                                    shuffle=False)
         _, tr_preds, tr_tgts = eval_epoch(model.apply, best_params, tr_batches, task)
         train_metrics = compute_metrics(tr_preds, tr_tgts, task)

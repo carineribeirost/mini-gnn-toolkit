@@ -126,21 +126,27 @@ def train(
     train_data = split_dataset(dataset, "train")
     val_data   = split_dataset(dataset, "val")
 
+    # max_nodes/max_edges in config are per-graph maximums; pad_with_graphs
+    # needs the total across the full batch (per-graph × batch_size + 1 dummy)
+    bs = cfg.train.batch_size
+    batch_max_nodes = cfg.dataset.max_nodes * bs + 1
+    batch_max_edges = cfg.dataset.max_edges * bs + 2
+
     def _make_train_batches(seed_int: int):
         return make_batches(
             train_data["graphs"],
-            batch_size=cfg.train.batch_size,
-            max_nodes=cfg.dataset.max_nodes,
-            max_edges=cfg.dataset.max_edges,
+            batch_size=bs,
+            max_nodes=batch_max_nodes,
+            max_edges=batch_max_edges,
             shuffle=True,
             seed=seed_int,
         )
 
     val_batches = make_batches(
         val_data["graphs"],
-        batch_size=cfg.train.batch_size,
-        max_nodes=cfg.dataset.max_nodes,
-        max_edges=cfg.dataset.max_edges,
+        batch_size=bs,
+        max_nodes=batch_max_nodes,
+        max_edges=batch_max_edges,
         shuffle=False,
     )
 

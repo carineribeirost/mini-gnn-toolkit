@@ -25,6 +25,9 @@ rapids = [
     "cudf-cu12",
     "cuml-cu12",
 ]
+deepchem = [
+    "deepchem",
+]
 dev = [
     "pytest",
     "pytest-xdist",

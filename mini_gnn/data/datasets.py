@@ -5,8 +5,8 @@ A cached dataset .npz contains:
     nodes_<i>, edges_<i>, senders_<i>, receivers_<i>, globals_<i>  — per graph i
     n_node_<i>, n_edge_<i>
     train_idx, val_idx, test_idx
-    fingerprints           (N, n_bits)  float32
-    coulomb                (N, max_atoms) float32
+    descriptors            (N, N_DESCRIPTORS) float32  — RDKit 2D physicochemical
+    desc_mean, desc_std    (N_DESCRIPTORS,)   float32  — scaler fitted on train split
     target_mean, target_std  (scalars)
     max_nodes, max_edges, n_targets  (scalars)
 """
@@ -17,19 +17,18 @@ from pathlib import Path
 import jraph
 import numpy as np
 
-from mini_gnn.data.graph_tuple import make_dummy_graph
-
 
 # ---- serialisation ----
 
 def save_dataset(
     path: str | Path,
     graphs: list[jraph.GraphsTuple],
-    train_idx: np.ndarray,
-    val_idx:   np.ndarray,
-    test_idx:  np.ndarray,
-    fingerprints: np.ndarray,
-    coulomb:      np.ndarray,
+    train_idx:   np.ndarray,
+    val_idx:     np.ndarray,
+    test_idx:    np.ndarray,
+    descriptors: np.ndarray,   # (N, N_DESCRIPTORS) — raw, unscaled
+    desc_mean:   np.ndarray,   # (N_DESCRIPTORS,) — from training split
+    desc_std:    np.ndarray,   # (N_DESCRIPTORS,)
     target_mean: float,
     target_std:  float,
     max_nodes: int,
@@ -49,8 +48,9 @@ def save_dataset(
     arrays["train_idx"]    = train_idx
     arrays["val_idx"]      = val_idx
     arrays["test_idx"]     = test_idx
-    arrays["fingerprints"] = fingerprints
-    arrays["coulomb"]      = coulomb
+    arrays["descriptors"]  = descriptors
+    arrays["desc_mean"]    = desc_mean
+    arrays["desc_std"]     = desc_std
     arrays["target_mean"]  = np.array(target_mean, dtype=np.float32)
     arrays["target_std"]   = np.array(target_std,  dtype=np.float32)
     arrays["max_nodes"]    = np.array(max_nodes,   dtype=np.int32)
@@ -83,8 +83,9 @@ def load_dataset(path: str | Path) -> dict:
         "train_idx":    data["train_idx"],
         "val_idx":      data["val_idx"],
         "test_idx":     data["test_idx"],
-        "fingerprints": data["fingerprints"],
-        "coulomb":      data["coulomb"],
+        "descriptors":  data["descriptors"],
+        "desc_mean":    data["desc_mean"],
+        "desc_std":     data["desc_std"],
         "target_mean":  float(data["target_mean"]),
         "target_std":   float(data["target_std"]),
         "max_nodes":    int(data["max_nodes"]),
@@ -98,7 +99,6 @@ def split_dataset(dataset: dict, split: str) -> dict:
     idx = dataset[f"{split}_idx"]
     return {
         **dataset,
-        "graphs":       [dataset["graphs"][i] for i in idx],
-        "fingerprints": dataset["fingerprints"][idx],
-        "coulomb":      dataset["coulomb"][idx],
+        "graphs":      [dataset["graphs"][i] for i in idx],
+        "descriptors": dataset["descriptors"][idx],
     }

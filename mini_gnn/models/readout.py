@@ -19,35 +19,43 @@ from mini_gnn.utils.types import Array
 
 
 def _n_graphs(graph: jraph.GraphsTuple) -> int:
-    return graph.n_node.shape[0]
+    return graph.n_node.shape[0]   # static — shape is known at trace time
+
+
+def _graph_ids(node_feats: Array, graph: jraph.GraphsTuple) -> Array:
+    """
+    Build a (N,) int array mapping each node to its graph index.
+    total_repeat_length=node_feats.shape[0] is static (padding size),
+    which is required for jnp.repeat inside jax.jit.
+    """
+    return jnp.repeat(
+        jnp.arange(_n_graphs(graph)),
+        graph.n_node,
+        total_repeat_length=node_feats.shape[0],
+    )
 
 
 def sum_readout(node_feats: Array, graph: jraph.GraphsTuple) -> Array:
-    """Sum node features within each graph."""
     return jraph.segment_sum(
         node_feats,
-        jnp.repeat(jnp.arange(_n_graphs(graph)), graph.n_node),
+        _graph_ids(node_feats, graph),
         num_segments=_n_graphs(graph),
     )
 
 
 def mean_readout(node_feats: Array, graph: jraph.GraphsTuple) -> Array:
-    """Mean of node features within each graph."""
-    graph_ids = jnp.repeat(jnp.arange(_n_graphs(graph)), graph.n_node)
-    total   = jraph.segment_sum(node_feats, graph_ids, num_segments=_n_graphs(graph))
-    counts  = jraph.segment_sum(
+    graph_ids = _graph_ids(node_feats, graph)
+    total  = jraph.segment_sum(node_feats, graph_ids, num_segments=_n_graphs(graph))
+    counts = jraph.segment_sum(
         jnp.ones(node_feats.shape[0]), graph_ids, num_segments=_n_graphs(graph)
     )
     return total / jnp.maximum(counts[:, None], 1.0)
 
 
 def max_readout(node_feats: Array, graph: jraph.GraphsTuple) -> Array:
-    """Max of node features within each graph (element-wise)."""
-    graph_ids = jnp.repeat(jnp.arange(_n_graphs(graph)), graph.n_node)
-    # segment_max is not in jraph; use jax.ops.segment_max
     return jax.ops.segment_max(
         node_feats,
-        graph_ids,
+        _graph_ids(node_feats, graph),
         num_segments=_n_graphs(graph),
     )
 
@@ -60,33 +68,20 @@ READOUT_FNS = {
 
 
 class AttentionReadout(nn.Module):
-    """
-    Soft-attention global readout.
-
-    Learns a scalar attention score per node, applies softmax within each
-    graph (via segment_softmax), then computes a weighted sum.
-    """
     hidden_dim: int
 
     @nn.compact
     def __call__(self, node_feats: Array, graph: jraph.GraphsTuple) -> Array:
         n_graphs  = _n_graphs(graph)
-        graph_ids = jnp.repeat(jnp.arange(n_graphs), graph.n_node)
+        graph_ids = _graph_ids(node_feats, graph)
 
-        scores = nn.Dense(1)(node_feats).squeeze(-1)             # (N,)
-        weights = jraph.segment_softmax(scores, graph_ids, num_segments=n_graphs)  # (N,)
-        weighted = node_feats * weights[:, None]                  # (N, D)
-        return jraph.segment_sum(weighted, graph_ids, num_segments=n_graphs)  # (G, D)
+        scores  = nn.Dense(1)(node_feats).squeeze(-1)
+        weights = jraph.segment_softmax(scores, graph_ids, num_segments=n_graphs)
+        weighted = node_feats * weights[:, None]
+        return jraph.segment_sum(weighted, graph_ids, num_segments=n_graphs)
 
 
 def get_readout(name: str, hidden_dim: int):
-    """
-    Return (readout_module_or_None, readout_fn_or_None).
-
-    For sum/mean/max, the module is None and the fn is a pure function.
-    For attention, the module is an AttentionReadout Flax module whose
-    params must be included in the model's param tree.
-    """
     if name in READOUT_FNS:
         return None, READOUT_FNS[name]
     if name == "attention":

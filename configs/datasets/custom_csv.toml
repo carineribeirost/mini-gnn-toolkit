@@ -1,9 +1,0 @@
-[dataset]
-name        = "custom_csv"
-path        = ""         # filled at runtime by preprocess.py
-target_col  = "target"
-max_nodes   = 0
-max_edges   = 0
-max_atoms   = 0
-task        = "regression"
-n_targets   = 1

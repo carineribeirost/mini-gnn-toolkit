@@ -2,8 +2,8 @@
 name        = "lipophilicity"
 path        = "data/cache/lipophilicity.npz"
 target_col  = "exp"
-max_nodes   = 58
-max_edges   = 130
+max_nodes   = 117
+max_edges   = 240
 task        = "regression"
 n_targets   = 1
 split       = "scaffold"
